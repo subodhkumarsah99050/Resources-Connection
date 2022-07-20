@@ -1,0 +1,23 @@
+Process to use Stdio 3D for Mongo Connection.
+
+Step-01:
+Open "Stdio 3T". Then, Click on "connect" 
+> new connection > Manually configure my connection setting > Next > Provide require details:
+
+In "server:" section
+Connection name: Test-connection 
+Server: Cosmos-DB-Host-URL
+Port: 10255
+
+In "Authentication:" section
+Select "Authentication mode: Base(SCRAM-SHA-256)"
+Username: your-cosmos-db-user-name
+Password: your-cosmos-db-password
+Authentication DB: admin (It is defauft you need to give it)
+
+In "SSL:" section
+"Use SSL Protocal to connect" check it.
+
+After all this configuration click on "test" to check
+
+Once your test is succes then click on connect and save.
