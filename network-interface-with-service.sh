@@ -25,4 +25,4 @@ else
         echo "Interface $interface_id is not associated with any load balancer."
     fi
 fi
-
+#1
