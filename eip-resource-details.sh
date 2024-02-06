@@ -36,15 +36,19 @@ for region in $regions; do
         fi
 
         # Check if the Elastic IP is associated with NAT gateways
-        nat_gateways=$(aws ec2 describe-nat-gateways --filter "Name=nat-gateway-addresses.public-ip,Values=$allocation_id" --region $region --output json)
+        nat_gateways=$(aws ec2 describe-nat-gateways --region $region --output json)
 
-        if [ -n "$nat_gateways" ]; then
-            echo "Associated NAT Gateways:"
-            echo "$nat_gateways"
-        fi
+        for nat_gateway in $(echo "${nat_gateways}" | jq -c '.NatGateways[]'); do
+            nat_gateway_allocation_id=$(echo "${nat_gateway}" | jq -r '.NatGatewayAddresses[].AllocationId')
+            if [ "$nat_gateway_allocation_id" == "$allocation_id" ]; then
+                echo "Associated NAT Gateway:"
+                echo "${nat_gateway}"
+                break
+            fi
+        done
 
         # Check if the Elastic IP is associated with VPN connections
-        vpn_connections=$(aws ec2 describe-vpn-connections --filter "Name=customer-gateway-configuration.remote-address,Values=$allocation_id" --region $region --output json)
+        vpn_connections=$(aws ec2 describe-vpn-connections --filters "Name=customer-gateway-configuration.remote-address,Values=$allocation_id" --region $region --output json)
 
         if [ -n "$vpn_connections" ]; then
             echo "Associated VPN Connections:"
