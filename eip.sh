@@ -1,42 +1,31 @@
-import boto3
+#!/bin/bash
 
-def get_eip_details():
-    # Create a Boto3 EC2 client
-    ec2_client = boto3.client('ec2')
+# Get a list of all AWS regions
+regions=$(aws ec2 describe-regions --query "Regions[].RegionName" --output text)
 
-    # Retrieve all regions
-    regions = [region['RegionName'] for region in ec2_client.describe_regions()['Regions']]
+# Loop through each region
+for region in $regions; do
+    echo "Region: $region"
 
-    # Iterate over each region
-    for region in regions:
-        print(f"Region: {region}")
+    # Use describe-addresses to get information about Elastic IPs
+    eips=$(aws ec2 describe-addresses --region $region --query "Addresses[].[PublicIp,InstanceId,NetworkInterfaceId]" --output text)
 
-        # Create EC2 resource for the current region
-        ec2_resource = boto3.resource('ec2', region_name=region)
+    # Loop through each Elastic IP
+    while read -r eip instance_id interface_id; do
+        echo "  Elastic IP: $eip"
+        echo "    Instance ID: $instance_id"
 
-        # Retrieve all Elastic IP addresses
-        eips = ec2_client.describe_addresses()
+        if [ -n "$interface_id" ]; then
+            echo "    Network Interface ID: $interface_id"
 
-        # Iterate over each Elastic IP address
-        for eip in eips['Addresses']:
-            print(f"  Elastic IP: {eip['PublicIp']}")
-            
-            # Check if the EIP is associated with a Network Interface
-            if 'NetworkInterfaceId' in eip:
-                # Retrieve the Network Interface details
-                network_interface = ec2_resource.NetworkInterface(eip['NetworkInterfaceId'])
-                print(f"    Network Interface ID: {network_interface.id}")
-                
-                # Retrieve the service details associated with the Network Interface
-                instance_id = network_interface.attachment['InstanceId']
-                instance = ec2_resource.Instance(instance_id)
-                print(f"    Instance ID: {instance.id}")
-                print(f"    Service: {instance.instance_type}")
-                
-            else:
-                print("    Not associated with any Network Interface")
-            print()
+            # Fetch service details using describe-instances
+            service_details=$(aws ec2 describe-instances --region $region --instance-ids $instance_id --query "Reservations[].Instances[].InstanceType" --output text)
+            echo "    Service Details: $service_details"
+        else
+            echo "    Not associated with any Network Interface"
+        fi
 
-if __name__ == "__main__":
-    get_eip_details()
+        echo ""
+    done <<< "$eips"
+done
 
