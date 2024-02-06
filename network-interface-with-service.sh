@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Specify the network interface ID
-interface_id="eni-0c4941e7c06b9d961"
+interface_id="<interface_id>"
 
 # Check if the interface exists
 interface_exists=$(aws ec2 describe-network-interfaces --network-interface-ids $interface_id --query 'NetworkInterfaces[*].NetworkInterfaceId' --output text 2>/dev/null)
@@ -18,7 +18,7 @@ else
     fi
 
     # Check if the interface is associated with a load balancer
-    load_balancer_arn=$(aws elbv2 describe-load-balancers --query "LoadBalancers[?contains(LoadBalancerName, '$interface_id')].LoadBalancerArn" --output text)
+    load_balancer_arn=$(aws elbv2 describe-load-balancers --load-balancer-arns "<load_balancer_arn>" --query "LoadBalancers[?contains(LoadBalancerName, '$interface_id')].LoadBalancerArn" --output text)
     if [ -n "$load_balancer_arn" ]; then
         echo "Interface $interface_id is associated with a load balancer: $load_balancer_arn"
     else
