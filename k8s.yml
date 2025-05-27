@@ -1,37 +1,5 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ip-printer
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: ip-printer
-  template:
-    metadata:
-      labels:
-        app: ip-printer
-    spec:
-      containers:
-      - name: ip-printer
-        image: busybox
-        command: ["/bin/sh", "-c"]
-        args:
-          - while true; do
-              echo -e "HTTP/1.1 200 OK\n\n$(hostname -i)" | nc -l -p 8080;
-            done
-        ports:
-        - containerPort: 8080
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: ip-printer-svc
-spec:
-  selector:
-    app: ip-printer
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 8080
-  type: ClusterIP
+Linkerd: Lightweight service mesh
+
+Traefik: K8s-native HTTP load balancer
+
+NGINX: More manual, but widely used
